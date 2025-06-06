@@ -37,7 +37,7 @@ def send_email(subject, message):
         server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
         server.quit()
     except Exception as e:
-        print(f"Email failed: {e}")
+        print(f"Email sending failed: {e}")
 
 def forward_to_admin(chat_id, text):
     bot.send_message(ADMIN_TELEGRAM_ID, f"Message from {chat_id}:\n{text}")
@@ -45,7 +45,23 @@ def forward_to_admin(chat_id, text):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     forward_to_admin(message.chat.id, "/start command invoked")
-    bot.send_message(message.chat.id, "👋 Welcome! What's your project about?")
+    welcome_text = (
+        "👋 Welcome to *Real Ad Traffic* Bot!\n\n"
+        "We deliver 100% real human traffic using:\n"
+        "✅ Google Ads\n"
+        "✅ Meta (Facebook & Instagram) Ads\n"
+        "✅ Push & Native Ad Networks\n\n"
+        "🚫 No fake/bot traffic. Just real leads, sales & growth.\n\n"
+        "Perfect for:\n"
+        "- E-commerce websites (dropshipping, affiliate)\n"
+        "- Service websites\n"
+        "- Lead generation pages\n"
+        "- Any project needing genuine users!\n\n"
+        "💬 Questions? DM @DestinationUnknowns\n\n"
+        "👉 Let's start! What's your project niche?"
+    )
+
+    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown")
     user_data[message.chat.id] = {}
     bot.register_next_step_handler(message, get_project_desc)
 
@@ -65,42 +81,51 @@ def get_url(message):
 
 def get_geo(message):
     forward_to_admin(message.chat.id, message.text)
-    user_data[message.chat.id]['geo'] = message.text
-    bot.send_message(message.chat.id, "Choose your package (e.g., 2000 visits - $100):")
+    geo = message.text
+    user_data[message.chat.id]['geo'] = geo
+
+    prices = {
+        "US/CA": [(2000, 100), (5500, 250), (12000, 500), (25000, 999)],
+        "Europe": [(2500, 100), (6500, 250), (14000, 500), (28000, 999)],
+        "Asia": [(5000, 100), (13000, 250), (28000, 500), (50000, 999)],
+        "Worldwide": [(3500, 100), (9000, 250), (19000, 500), (35000, 999)]
+    }
+
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    for visits, price in prices.get(geo, []):
+        markup.add(f"{visits} visits - ${price}")
+
+    bot.send_message(message.chat.id, "Choose your package:", reply_markup=markup)
     bot.register_next_step_handler(message, get_package)
 
 def get_package(message):
     forward_to_admin(message.chat.id, message.text)
     user_data[message.chat.id]['package'] = message.text
-    bot.send_message(message.chat.id, "Specific country? Type or say 'No':")
+    bot.send_message(message.chat.id, "Specific country? If yes, type it. Otherwise, type 'No':")
     bot.register_next_step_handler(message, get_specific_country)
 
 def get_specific_country(message):
     forward_to_admin(message.chat.id, message.text)
     user_data[message.chat.id]['country'] = message.text
-    bot.send_message(message.chat.id, "Enter your email:")
+    bot.send_message(message.chat.id, "Enter your email address for reports:")
     bot.register_next_step_handler(message, get_email)
 
 def get_email(message):
     forward_to_admin(message.chat.id, message.text)
     user_data[message.chat.id]['email'] = message.text
-    wallet_text = "\n".join([f"{k}: {v}" for k, v in wallets.items()])
-    bot.send_message(message.chat.id, f"Send payment to:\n\n{wallet_text}")
+    wallet_text = "\n".join([f"{k}: `{v}`" for k, v in wallets.items()])
+    bot.send_message(message.chat.id, f"Send payment to:\n\n{wallet_text}\n\nYou'll receive your traffic report via email. ✅", parse_mode="Markdown")
 
-    summary = f"Order:\n" + "\n".join(f"{k}: {v}" for k, v in user_data[message.chat.id].items())
-    bot.send_message(ADMIN_TELEGRAM_ID, summary)
-    send_email("New Order", summary)
-    bot.send_message(message.chat.id, "Order recorded. Awaiting payment.")
+    summary = '\n'.join([f"{k.capitalize()}: {v}" for k, v in user_data[message.chat.id].items()])
+    bot.send_message(ADMIN_TELEGRAM_ID, f"New Traffic Order:\n\n{summary}")
+    send_email("New Traffic Order", summary)
+    bot.send_message(message.chat.id, "Thank you! Your order is recorded. We'll notify you after payment confirmation.")
 
-# Flask webhook setup
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/', methods=['POST'])
 def webhook():
-    if request.method == "POST":
-        update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
-        bot.process_new_updates([update])
-        return '', 200
-    return abort(403)
+    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
+    bot.process_new_updates([update])
+    return '', 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
-
