@@ -18,7 +18,6 @@ app = Flask(__name__)
 
 wallets = {
     "USDT (TRC20)": "TNSTLD5QoEWTfBUYCQS4tz1d6YCoNbFwzX",
-    "USDT (ERC20)": "0x1ccec8467306195d2ceb0956e0d92dbd92d5115e",
     "ETH": "0x1ccec8467306195d2ceb0956e0d92dbd92d5115e",
     "SOL": "9cEaE1fbkEtSoezz7xMFjtdfS8N1QXE4g6TDsGmi9nFG"
 }
@@ -46,21 +45,28 @@ def forward_to_admin(chat_id, text):
 def send_welcome(message):
     forward_to_admin(message.chat.id, "/start command invoked")
     welcome_text = (
-        "👋 Welcome to *Real Ad Traffic* Bot!\n\n"
-        "We deliver 100% real human traffic using:\n"
+        "🚀 Welcome to *Ad Traffic Bot* – Real Traffic That Brings Results!\n\n"
+        "We deliver *100% real, premium-quality traffic* using:\n"
         "✅ Google Ads\n"
-        "✅ Meta (Facebook & Instagram) Ads\n"
-        "✅ Push & Native Ad Networks\n\n"
-        "🚫 No fake/bot traffic. Just real leads, sales & growth.\n\n"
-        "Perfect for:\n"
-        "- E-commerce websites (dropshipping, affiliate)\n"
-        "- Service websites\n"
-        "- Lead generation pages\n"
-        "- Any project needing genuine users!\n\n"
-        "💬 Questions? DM @DestinationUnknowns\n\n"
-        "👉 Let's start! What's your project niche?"
+        "✅ Meta (Facebook) Ads\n"
+        "✅ Push & Native Advertising\n\n"
+        "📌 No bots. No fake clicks. No garbage traffic.\n"
+        "💥 Real people – bringing *real sales, leads, and engagement*.\n\n"
+        "🧠 Perfect for:\n"
+        "• E-Commerce websites (Dropshipping, Shopify, etc.)\n"
+        "• Affiliate & CPA campaigns\n"
+        "• Service websites (SMMA, freelancers, SaaS, agencies)\n"
+        "• Grayhat / Blackhat niches\n"
+        "• Crypto, NFT, casino & betting landing pages\n"
+        "• Lead generation forms\n"
+        "• SEO testing, heatmaps, and behavioral analysis\n\n"
+        "💵 Minimum order: $100\n"
+        "🌍 Geo-targeted: US/CA, Europe, Asia, or Worldwide\n"
+        "💳 We accept: *USDT (TRC20/ERC20), USDC, ETH, SOL*\n"
+        "📩 Detailed report sent by email after delivery\n\n"
+        "🔥 Ready to scale with real traffic? Let’s go!\n"
+        "Type /start or tap below to begin your order."
     )
-
     bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown")
     user_data[message.chat.id] = {}
     bot.register_next_step_handler(message, get_project_desc)
